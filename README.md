@@ -5,18 +5,33 @@ Repo używa koncepcji devcontainers
 jako sposobu na izolację środowiska od innych komponentów pracujących na hoście.
 Do uruchomienia sugerowane jest posiadanie zainstalowanego środowiska kontereryzacji - Dockera. 
 
+Uwaga, gdy pracujesz w kontenerze na linuksie, upewnij się, że w VSC masz ustawiony znak końca linii na styl linuxa (LF) a nie na windowsa (CRLF). 
+Jeśli tego nie zrobisz, to skrypty będą błędnie interpretowane przez shell (bash)
+
 W Repo
 - infra - zawiera skrypty (w bicep i az cli), które tworzą i konfigurują komponenety stacku azurowego
 
 ## Prezentowane koncepcje:
 - zastosowanie skryptów automatyzujących tworzenie wymaganych komponentów w Azure - Bicep
-- bezpieczna komunikacja przy użyciu prywatnych VNETów - temat często podkreślany przez klientów
-    - Tworzenie Vnet, dzielenie na podsieci, tworzenie prywantnych endpointów we wskazanych podsieciach
+- zestawienie bezpiecznej komunikacji przy użyciu prywatnych VNETów - temat często podkreślany przez klientów
+    - Tworzenie Vnet, dzielenie na podsieci
+    - tworzenie prywatnych endpointów we wskazanych podsieciach
     - ograniczenie dostępu do komunikacji z vnetów i prywatnych endpointów
 
 ## Żeby nie było za łatwo - topologia:
 - Używane są cztery resource grupy - idealnie jeśli w testach każda będzie w innym regionie azurowym
-- listę funkcjonalności dostępnych w regionach można znaleźć tu: https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies 
+- listę funkcjonalności dostępnych w regionach można znaleźć tu: https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies
+- przeznaczenie grup:
+    - FILES_RG_NAME
+        - w tej grupie jest tworzony zasób Az File i to jest podstawowe przeznaczenie grupy. 
+        - w celu zabezpieczenia ruchu przychodzącego mamy tu także endpointy prywatne i skojarzone z nimi NICi
+    - WORKFLOW_RG_NAME
+        - logic apka i komponenty wymagane przez logic apkę
+        - VNet, do którego jest podpięty private endpoint (z grupy FILES_RG_NAME)
+    - DATABUS_RG_NAME
+        - szyna komunikatów, do której zapisuje "drugi" workfow. ("Pierwszy" generuje faktury i zapisuje je w FILES_RG_NAME)
+    - ACCESS_RG_NAME
+        - grupa do "testowania zabezpieczeń" do Az File, mamy ty maszynę VNET, NIC i wirtualną z linuxem. Z linuxa wygodnie jest zarządzać plikami (usuwać jakieś nadmiarowe, zakładać katalogi itd.).
 
 # Aby odpalić:
 ## Zainstalować prerequisities:

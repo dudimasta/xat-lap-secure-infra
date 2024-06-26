@@ -13,23 +13,30 @@ param workflow_rg_location=readEnvironmentVariable('WORKFLOW_RG_LOCATION')
 param access_rg_name=readEnvironmentVariable('ACCESS_RG_NAME')
 param access_rg_location=readEnvironmentVariable('ACCESS_RG_LOCATION')
 
-param secure_vnet_name=readEnvironmentVariable('ACCESS_VNET_NAME')
-param secure_vnet_address_prefixes=readEnvironmentVariable('ACCESS_VNET_ADDRESS_PREFIXES')
+param secure_vnet_name_linux=readEnvironmentVariable('ACCESS_VNET_NAME')
+param secure_vnet_address_prefixes_linux=readEnvironmentVariable('ACCESS_VNET_ADDRESS_PREFIXES')
 
-param snet_2_name=readEnvironmentVariable('ACCESS_SUBNET_2_NAME')
-param snet_2_prefix=readEnvironmentVariable('ACCESS_SUBNET_2_ADDRESS')
+param snet_2_name_linux=readEnvironmentVariable('ACCESS_SUBNET_2_NAME')
+param snet_2_prefix_linux=readEnvironmentVariable('ACCESS_SUBNET_2_ADDRESS')
 
-param snet_3_name=readEnvironmentVariable('ACCESS_SUBNET_3_NAME')
-param snet_3_prefix=readEnvironmentVariable('ACCESS_SUBNET_3_ADDRESS')
+param snet_3_name_linux=readEnvironmentVariable('ACCESS_SUBNET_3_NAME')
+param snet_3_prefix_linux=readEnvironmentVariable('ACCESS_SUBNET_3_ADDRESS')
 
-param snet_default_name=readEnvironmentVariable('ACCESS_SUBNET_DEFAULT_NAME')
-param snet_default_prefix=readEnvironmentVariable('ACCESS_SUBNET_DEFAULT_ADDRESS')
+param snet_default_name_linux=readEnvironmentVariable('ACCESS_SUBNET_DEFAULT_NAME')
+param snet_default_prefix_linux=readEnvironmentVariable('ACCESS_SUBNET_DEFAULT_ADDRESS')
 
-param snet_firewall_name=readEnvironmentVariable('ACCESS_SUBNET_FIREWALL_NAME')
-param snet_firewall_prefix=readEnvironmentVariable('ACCESS_SUBNET_FIREWALL_ADDRESS')
+param snet_firewall_name_linux=readEnvironmentVariable('ACCESS_SUBNET_FIREWALL_NAME')
+param snet_firewall_prefix_linux=readEnvironmentVariable('ACCESS_SUBNET_FIREWALL_ADDRESS')
 
 param linux_vm_ip_address_name=readEnvironmentVariable('LINUX_VM_IP_ADDRESS_NAME')
 param linux_vm_nsg_name=readEnvironmentVariable('LINUX_VM_NSG_NAME')
 
 param sec_wf_file_share_name=readEnvironmentVariable('SEC_WF_FILE_SHARE_NAME')
 param sec_wf_storageAccnt_name=readEnvironmentVariable('SEC_WF_STORAGEACCNT_NAME')
+
+param secure_vnet_name_lap=readEnvironmentVariable('WORKFLOW_VNET_NAME')
+param secure_vnet_address_prefixes_lap=readEnvironmentVariable('WORKFLOW_VNET_ADDRESS_PREFIXEX')
+param snet_1_name_lap=readEnvironmentVariable('WORKFLOW_SUBNET_1_NAME')
+param snet_1_prefix_lap=readEnvironmentVariable('WORKFLOW_SUBNET_1_ADDRESS')
+param snet_2_name_lap=readEnvironmentVariable('WORKFLOW_SUBNET_2_NAME')
+param snet_2_prefix_lap=readEnvironmentVariable('WORKFLOW_SUBNET_2_ADDRESS')
