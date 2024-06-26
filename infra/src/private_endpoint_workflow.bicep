@@ -7,6 +7,7 @@ targetScope='subscription'
 // param privateDnsDeploymentName string
 
 param privateEndpointName string
+param privateEndpointNicName string
 
 // origin of private link, e.g. '/subscriptions/de47847e-1e04-4c18-99de-a11f659d3119/resourceGroups/sec-wf-files-rg/providers/Microsoft.Storage/storageAccounts/secwfstorage'
 
@@ -27,7 +28,7 @@ resource resourceGroup_workflow 'Microsoft.Resources/resourceGroups@2024-03-01' 
 }
 
 param workflow_vnet_name string
-resource vnet_name 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
+resource workflow_vnet_resource 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   scope: resourceGroup_workflow
   name: workflow_vnet_name
 }
@@ -38,7 +39,7 @@ param workflow_subnet_name string
 // param subnet string = 'foo'
 resource subnet_resource 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
   
-  parent: vnet_name
+  parent: workflow_vnet_resource
   name: workflow_subnet_name
 }
 
@@ -48,44 +49,66 @@ resource storage_account_resource 'Microsoft.Storage/storageAccounts@2023-05-01'
   scope: resourceGroup_files
 }
 
-module endpoint_creating_module './modules/private_endpoint_workflow_module.bicep' = {
+module private_endpoint_creating_module './modules/private_endpoint_workflow_module.bicep' = {
   scope: resourceGroup_workflow
   name: privateEndpointName
   params: {
     privateEndpointName: privateEndpointName
+    privateEndpointNicName: privateEndpointNicName
     subnet_resource_id: subnet_resource.id
     targetSubResource: targetSubResource
     privateLinkResource_id: storage_account_resource.id
   }
 }
+var privateDnsZoneName = 'PrivateDnsZone-5a62e075-04f7-4a96-8d5f-4c9bb8fbd377'
+module PrivateDnsZone_deployment './modules/nested_PrivateDnsZone_deployment.bicep' = {
+  //name: 'PrivateDnsZone-5a62e075-04f7-4a96-8d5f-4c9bb8fbd377'
+  name: privateDnsZoneName
+  scope: resourceGroup_workflow
+  params: {}
+  dependsOn: [
+    private_endpoint_creating_module
+  ]
+}
 
-// module privateDnsDeployment './nested_privateDnsDeployment.bicep' = {
-//   name: privateDnsDeploymentName
-//   params: {}
-//   dependsOn: [
-//     privateEndpoint
-//   ]
-// }
-// 
-// module VirtualNetworkLink_20240626171526 './nested_VirtualNetworkLink_20240626171526.bicep' = {
-//   name: 'VirtualNetworkLink-20240626171526'
-//   params: {
-//     virtualNetworkId: virtualNetworkId
-//   }
-//   dependsOn: [
-//     privateDnsDeployment
-//   ]
-// }
+module VirtualNetworklink_resource './modules/nested_VirtualNetworklink.bicep' = {
+  name: 'VirtualNetworklink-5a62e075-04f7-4a96-8d5f-4c9bb8fbd377'
+  scope: resourceGroup_workflow
+  params: {
+    virtualNetworkId: workflow_vnet_resource.id
+#disable-next-line no-hardcoded-env-urls
+    privatelink_name: 'privatelink.file.core.windows.net/${uniqueString(workflow_vnet_resource.id)}'
+  }
+  dependsOn: [
+    PrivateDnsZone_deployment
+  ]
+}
 
-// module DnsZoneGroup_20240626171526 './nested_DnsZoneGroup_20240626171526.bicep' = {
-//   name: 'DnsZoneGroup-20240626171526'
-//   scope: resourceGroup('sec-wf-workflow-rg')
-//   params: {
-//     privateEndpointName: privateEndpointName
-//     location: location
-//   }
-//   dependsOn: [
-//     privateEndpoint
-//     privateDnsDeployment
-//   ]
-// }
+resource privatelink_file_core_windows_net 'Microsoft.Network/privateDnsZones@2018-09-01' existing = {
+  scope: resourceGroup_workflow
+  #disable-next-line no-hardcoded-env-urls
+    name: 'privatelink.file.core.windows.net'
+  }
+  
+
+resource PrivateDnsZone_symbol 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  scope: resourceGroup_workflow
+  // name: privateDnsZoneName
+  name: privatelink_file_core_windows_net.id
+}
+
+
+module DnsZoneGroup_20240626171526 './modules/nested_DnsZoneGroup_20240626171526.bicep' = {
+  name: 'DnsZoneGroup-20240626171526'
+  scope: resourceGroup_workflow
+  params: {
+    privateEndpointName: privateEndpointName
+    //location: location
+    location: resourceGroup_workflow.location
+    privateDnsZoneId: PrivateDnsZone_symbol.id
+  }
+  dependsOn: [
+    private_endpoint_creating_module
+    PrivateDnsZone_deployment
+  ]
+}

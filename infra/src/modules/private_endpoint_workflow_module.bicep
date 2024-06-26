@@ -1,7 +1,9 @@
 param subnet_resource_id string
 param privateEndpointName string
+param privateEndpointNicName string
 param targetSubResource array
 param privateLinkResource_id string
+
 
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' =  {
   location: resourceGroup().location
@@ -10,7 +12,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' =  {
     subnet: {
       id: subnet_resource_id
     }
-    customNetworkInterfaceName: 'rdu-private-endpoint-test-0-nic'
+    customNetworkInterfaceName: privateEndpointNicName
     privateLinkServiceConnections: [
       {
         name: privateEndpointName

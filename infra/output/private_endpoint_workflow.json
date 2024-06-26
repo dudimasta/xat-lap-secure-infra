@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "files_rg_name": {
+      "value": "sec-wf-files-rg"
+    },
+    "workflow_rg_name": {
+      "value": "sec-wf-workflow-rg"
+    },
+    "workflow_vnet_name": {
+      "value": "sec-wf-lap-vnet"
+    },
+    "workflow_subnet_name": {
+      "value": "sec-wf-lap-snet-1"
+    },
+    "privateEndpointName": {
+      "value": "sec-wf-priv-endpoint"
+    },
+    "privateEndpointNicName": {
+      "value": "sec-wf-priv-endpoint-nic"
+    },
+    "sec_wf_storageaccnt_name": {
+      "value": "secwfstorage"
+    }
+  }
+}
