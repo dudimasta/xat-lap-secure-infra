@@ -1,90 +1,180 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "virtualMachines_test_access_vm_name": {
-            "defaultValue": "test-access-vm",
-            "type": "String"
+        "location": {
+            "type": "string"
         },
-        "disks_test_access_vm_OsDisk_1_8124a9cc57b94caeb4b68b0be6e68e7f_externalid": {
-            "defaultValue": "/subscriptions/872d7f5d-34ce-4fd2-aad8-4259b54f3aa6/resourceGroups/rdu-oracle-vm2_group/providers/Microsoft.Compute/disks/test-access-vm_OsDisk_1_8124a9cc57b94caeb4b68b0be6e68e7f",
-            "type": "String"
+        "privateEndpointName": {
+            "type": "string"
         },
-        "networkInterfaces_test_access_vm908_externalid": {
-            "defaultValue": "/subscriptions/872d7f5d-34ce-4fd2-aad8-4259b54f3aa6/resourceGroups/rdu-oracle-vm2_group/providers/Microsoft.Network/networkInterfaces/test-access-vm908",
-            "type": "String"
+        "privateLinkResource": {
+            "type": "string"
+        },
+        "targetSubResource": {
+            "type": "array"
+        },
+        "requestMessage": {
+            "type": "string"
+        },
+        "subnet": {
+            "type": "string"
+        },
+        "virtualNetworkId": {
+            "type": "string"
+        },
+        "virtualNetworkResourceGroup": {
+            "type": "string"
+        },
+        "subnetDeploymentName": {
+            "type": "string"
+        },
+        "privateDnsDeploymentName": {
+            "type": "string"
         }
     },
-    "variables": {},
     "resources": [
         {
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2024-03-01",
-            "name": "[parameters('virtualMachines_test_access_vm_name')]",
-            "location": "northeurope",
+            "location": "[parameters('location')]",
+            "name": "[parameters('privateEndpointName')]",
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2021-05-01",
             "properties": {
-                "hardwareProfile": {
-                    "vmSize": "Standard_B1s"
+                "subnet": {
+                    "id": "[parameters('subnet')]"
                 },
-                "additionalCapabilities": {
-                    "hibernationEnabled": false
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "canonical",
-                        "offer": "0001-com-ubuntu-minimal-jammy",
-                        "sku": "minimal-22_04-lts-gen2",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "osType": "Linux",
-                        "name": "[concat(parameters('virtualMachines_test_access_vm_name'), '_OsDisk_1_8124a9cc57b94caeb4b68b0be6e68e7f')]",
-                        "createOption": "FromImage",
-                        "caching": "ReadWrite",
-                        "managedDisk": {
-                            "id": "[parameters('disks_test_access_vm_OsDisk_1_8124a9cc57b94caeb4b68b0be6e68e7f_externalid')]"
-                        },
-                        "deleteOption": "Delete"
-                    },
-                    "dataDisks": [],
-                    "diskControllerType": "SCSI"
-                },
-                "osProfile": {
-                    "computerName": "[parameters('virtualMachines_test_access_vm_name')]",
-                    "adminUsername": "vmadmin",
-                    "linuxConfiguration": {
-                        "disablePasswordAuthentication": false,
-                        "provisionVMAgent": true,
-                        "patchSettings": {
-                            "patchMode": "ImageDefault",
-                            "assessmentMode": "ImageDefault"
+                "customNetworkInterfaceName": "rdu-private-endpoint-test-0-nic",
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[parameters('privateEndpointName')]",
+                        "properties": {
+                            "privateLinkServiceId": "[parameters('privateLinkResource')]",
+                            "groupIds": "[parameters('targetSubResource')]"
                         }
-                    },
-                    "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
-                },
-                "securityProfile": {
-                    "uefiSettings": {
-                        "secureBootEnabled": true,
-                        "vTpmEnabled": true
-                    },
-                    "securityType": "TrustedLaunch"
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
+                    }
+                ]
+            },
+            "tags": {},
+            "dependsOn": []
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "[parameters('privateDnsDeploymentName')]",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[parameters('privateEndpointName')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
                         {
-                            "id": "[parameters('networkInterfaces_test_access_vm908_externalid')]",
+                            "apiVersion": "2017-05-10",
+                            "name": "PrivateDnsZone-b8b6a5dc-c823-4e61-bda5-efe945b9a09b",
+                            "type": "Microsoft.Resources/deployments",
+                            "subscriptionId": "de47847e-1e04-4c18-99de-a11f659d3119",
+                            "resourceGroup": "sec-wf-workflow-rg",
                             "properties": {
-                                "deleteOption": "Detach"
+                                "mode": "Incremental",
+                                "template": {
+                                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                                    "contentVersion": "1.0.0.0",
+                                    "resources": [
+                                        {
+                                            "type": "Microsoft.Network/privateDnsZones",
+                                            "apiVersion": "2018-09-01",
+                                            "name": "privatelink.file.core.windows.net",
+                                            "location": "global",
+                                            "tags": {},
+                                            "properties": {}
+                                        }
+                                    ]
+                                }
                             }
                         }
                     ]
-                },
-                "diagnosticsProfile": {
-                    "bootDiagnostics": {
-                        "enabled": true
-                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "VirtualNetworkLink-20240626171526",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[parameters('privateDnsDeploymentName')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "apiVersion": "2017-05-10",
+                            "name": "VirtualNetworklink-b8b6a5dc-c823-4e61-bda5-efe945b9a09c",
+                            "type": "Microsoft.Resources/deployments",
+                            "subscriptionId": "de47847e-1e04-4c18-99de-a11f659d3119",
+                            "resourceGroup": "sec-wf-workflow-rg",
+                            "properties": {
+                                "mode": "Incremental",
+                                "template": {
+                                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                                    "contentVersion": "1.0.0.0",
+                                    "resources": [
+                                        {
+                                            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+                                            "apiVersion": "2018-09-01",
+                                            "name": "[concat('privatelink.file.core.windows.net', '/', uniqueString(parameters('virtualNetworkId')))]",
+                                            "location": "global",
+                                            "properties": {
+                                                "virtualNetwork": {
+                                                    "id": "[parameters('virtualNetworkId')]"
+                                                },
+                                                "registrationEnabled": false
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "DnsZoneGroup-20240626171526",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "sec-wf-workflow-rg",
+            "dependsOn": [
+                "[parameters('privateEndpointName')]",
+                "[parameters('privateDnsDeploymentName')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+                            "apiVersion": "2021-05-01",
+                            "name": "[concat(parameters('privateEndpointName'), '/', 'default')]",
+                            "location": "[parameters('location')]",
+                            "properties": {
+                                "privateDnsZoneConfigs": [
+                                    {
+                                        "name": "privatelink-file-core-windows-net",
+                                        "properties": {
+                                            "privateDnsZoneId": "/subscriptions/de47847e-1e04-4c18-99de-a11f659d3119/resourceGroups/sec-wf-workflow-rg/providers/Microsoft.Network/privateDnsZones/privatelink.file.core.windows.net"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
                 }
             }
         }

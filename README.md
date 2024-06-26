@@ -57,28 +57,37 @@ W Repo
 ## Co się dzieje po kolei
 ### Infrastruktura i zabezpieczenia
 - Utworzenie komponentów podstawowywch zgodnie instrukcjami w main.bicep. Aby uruchomić: 
-</br><code>cd ./infra/</br>sh ./deploy_base.sh</code>. </br>
+</br><code>cd ./infra/</br>sh ./build.sh</code>. </br>
 W wyniku uruchomienia utworzą się
     - Resource Groups
-    - vnet i z podziałem podział vnetu na subnety (automatyzacja w modułach
-</br><code>v-net.bicep, subnet.bicep</code>, wywoływanych z main.bicep)
+    - w grupie ACCESS_RG_NAME: vnet ACCESS_VNET_NAME z podziałem podział na subnety (automatyzacja w modułach
+</br><code>v-net.bicep, subnet.bicep</code>, wywoływanych z main.bicep). VNet jest wykorzystywany konfiguracji ACL w Az File, tzn. Az Flie odrzuci ruch nie pochodzący z tego VNetu (szczegóły niżej w tekście)
     - blob storage, a w nim zasobu az files, zgodnie z instrukcjami z pliku
     </br><code>az-files.bicep</code>
-    - Maszyna wirtualna z Linuxem - w celu sprawdzenia czy reguły ograniczenia dostępu do Az File działają w warstwie sieciowej (v-nets, private endpoints). Po deploymencie sprawdzić, ze z Linuxa jest dostęp do Az Files. Aby sprawdzić dostęp do Az File z VM:
-        - zaloguj się do shella Linuxa, 
-            - za wpuszczenie ruchu odpowiadają reguły firewalla zdefiniowane w NSG o nawie danej zmienną środowiskową LINUX_VM_NSG_NAME. Aby zobaczyć namiary na maszynę z linuxem, uruchom:
-                - <code>sh ./linux-vm-show-conn-details.sh</code>
-                - będziesz potrzebować jakiegoś edytora. Przy pierwszym logowaniu wykonaj następujące polecenia:
-                    - <code>sudo apt update && sudo apt upgrade -y</code>
-                    - <code>sudo apt install vim</code>
-        - podmontuj zasób z Az File do lokalnego systemu plików. Skrypt to zamontowania zasobu Az File na Windows/ Linux/ MacOS można pobrać z Portal Azure. Wybierz file share > Connect > rodzaj OSa. Skopiuj skrypt i uruchom na maszynie testowej
-            - będziemy testować nadawanie/usuwanie dostępów, skrypt skopiowany z Azure Portal możesz zapisaćw pliku np. w lokalizacji usera: np. <code>vim mount.sh</code> i potem <code>sh ./mount.sh</code>Wykonanie tego skryptu spowoduje, że zasób z AzFile będzie dostępny także po restarcie, bez konieczności ponownego uruchomienia. (Aby wejść w tryb edycji w VIM, po uruchomieniu programu naciśnij a. Gdy skończysz edycję pliku, naciścij kombinację: Esc + : + w + q - czyli Write and Quit. Więcej o edytowaniu w VIM np tu: https://vim.rtorr.com/)
-        - załóż plik, wyedytuj, zapisz
+    - Maszyna wirtualna z Linuxem 
+    - W grupie WORKFLOW_RG_NAME:
+        - Private endpoint podczepiony do VNetu WORKFLOW_VNET_NAME. 
+        - Referencja do tego endpointu z ACL ustawionych na storage account (do którego należy Az File) - to powoduje, że o ile ruch przechodzi przez przez private endpoint to jest wpuszczany do Az File.
+    
+### Sprawdzenie działania reguł dostępu
+W celu sprawdzenia czy reguły ograniczenia dostępu do Az File działają w warstwie sieciowej (v-nets, private endpoints) wykonaj poniższe.
+
+Po deploymencie sprawdzić, ze z Linuxa jest dostęp do Az Files. Aby sprawdzić dostęp do Az File z VM:
+- zaloguj się do shella Linuxa, 
+    - za wpuszczenie ruchu odpowiadają reguły firewalla zdefiniowane w NSG o nawie danej zmienną środowiskową LINUX_VM_NSG_NAME. Aby zobaczyć namiary na maszynę z linuxem, uruchom:
+        - <code>sh ./linux-vm-show-conn-details.sh</code>
+        - będziesz potrzebować jakiegoś edytora. Przy pierwszym logowaniu do linuxa wykonaj następujące polecenia:
+            - <code>sudo apt update && sudo apt upgrade -y</code>
+            - zainstaluj jakiś edytor tekstu, np. vim: <code>sudo apt install vim</code>
+- podmontuj zasób z Az File do lokalnego systemu plików. Skrypt to zamontowania zasobu Az File na Windows/ Linux/ MacOS można pobrać z Portal Azure. Wybierz file share > Connect > rodzaj OSa. Skopiuj skrypt i uruchom na maszynie testowej
+    - będziemy testować nadawanie/usuwanie dostępów, skrypt skopiowany z Azure Portal możesz zapisaćw pliku np. w lokalizacji usera: np. <code>vim mount.sh</code> i potem <code>sh ./mount.sh</code>Wykonanie tego skryptu spowoduje, że zasób z AzFile będzie dostępny także po restarcie, bez konieczności ponownego uruchomienia. (Aby wejść w tryb edycji w VIM, po uruchomieniu programu naciśnij a. Gdy skończysz edycję pliku, naciścij kombinację: Esc + : + w + q - czyli Write and Quit. Więcej o edytowaniu w VIM np tu: https://vim.rtorr.com/)
+- Załóż plik, wyedytuj, zapisz
         - sprawdź, że pliki są widoczne z portalu Az w inspekcji zawartości udostępninych zasobów
+
 - Po tym jak udało się skomunikować z Az File z komputera pracującego w innym regionie geograficznym, zabezpieczmy ruch. Celem poniższych kroków jest aby Az File akceptował komunikację z jawnie wskazanych podsieci należących do sieci prywatnej (private vnet). W prezentowanym przykładzie komunikacja zostanie zabezpieczona z użyciem reguł ustaionych, tzn. będzie szła po prywantym VNet - czyli service endpoints (https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview)
     - Rozpoczynamy od zamknięcia całego ruchu do Az File, który przychodzi po internecie publicznym. Poniższy skrypt uruchamia polecenia Az Cli, które wyłączają dostęp domyślny: 
     </br><code>sh ./az-file-deny-access.sh</code>
     </br>Po uruchomieniu tego skryptu, możesz sprawdzić, że dostęp do Az File z testowej maszyny linuxowej został wyłączony. Zawartość nie jest dostępna.
-    - Po zweryfikowania, że domyślnie dostęp został wyłączony, konfigurujemy ACL (access control list), w której wskazujemy że ma zostać wpuszczony ruch z subnetu, z którym jest skojarzony NIC (Network Interface Card) maszyny wirtualnej z linuxem. </br>
+    - Po zweryfikowaniu, że domyślny dostęp został wyłączony, konfigurujemy ACL (access control list), w której wskazujemy że ma zostać wpuszczony ruch z subnetu, z którym jest skojarzony NIC (Network Interface Card) maszyny wirtualnej z linuxem.</br>
     <code>sh ./az-file-acl-add-linux-subnet.sh</code></br>
-    W wyniku uruchomienia skryptu maszyna z linuxem (a właściwie subnet, do którego jest podpięta) uzyskuje dostęp do zasobów Az File.
+    W wyniku uruchomienia skryptu maszyna z linuxem (a właściwie subnet, do którego jest podpięta) ponownie uzyskuje dostęp do zasobów Az File.
