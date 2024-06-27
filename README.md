@@ -91,3 +91,7 @@ Po deploymencie sprawdzić, ze z Linuxa jest dostęp do Az Files. Aby sprawdzić
     - Po zweryfikowaniu, że domyślny dostęp został wyłączony, konfigurujemy ACL (access control list), w której wskazujemy że ma zostać wpuszczony ruch z subnetu, z którym jest skojarzony NIC (Network Interface Card) maszyny wirtualnej z linuxem.</br>
     <code>sh ./az-file-acl-add-linux-subnet.sh</code></br>
     W wyniku uruchomienia skryptu maszyna z linuxem (a właściwie subnet, do którego jest podpięta) ponownie uzyskuje dostęp do zasobów Az File.
+
+to solve error
+-'Unable to evaluate template language function 'extensionResourceId':
+- use: [resourceId('Microsoft.SQL/servers/databases', parameters('sqlServerName'), 'TestDB')]
