@@ -5,8 +5,13 @@ param linux_vm_name string
 // param managed_disk_id string = '/subscriptions/872d7f5d-34ce-4fd2-aad8-4259b54f3aa6/resourceGroups/rdu-oracle-vm2_group/providers/Microsoft.Compute/disks/test-access-vm_OsDisk_1_8124a9cc57b94caeb4b68b0be6e68e7f'
 // param managed_disk_id string 
 // param nic_id string = '/subscriptions/872d7f5d-34ce-4fd2-aad8-4259b54f3aa6/resourceGroups/rdu-oracle-vm2_group/providers/Microsoft.Network/networkInterfaces/test-access-vm908'
-param nic_id string
+param linux_vm_nic_name string
 param stripped_uid string = replace(string(newGuid()), '-', '')
+
+resource linux_nic 'Microsoft.Network/networkInterfaces@2023-11-01' existing = {
+  name: linux_vm_nic_name
+  scope: resourceGroup()
+}
 
 resource linux_vm_name_resource 'Microsoft.Compute/virtualMachines@2024-03-01' = {
   name: linux_vm_name
@@ -65,7 +70,7 @@ resource linux_vm_name_resource 'Microsoft.Compute/virtualMachines@2024-03-01' =
     networkProfile: {
       networkInterfaces: [
         {
-          id: nic_id
+          id: linux_nic.id
           properties: {
             deleteOption: 'Detach'
           }
@@ -78,4 +83,7 @@ resource linux_vm_name_resource 'Microsoft.Compute/virtualMachines@2024-03-01' =
       }
     }
   }
+  dependsOn: [
+    linux_nic
+  ]
 }

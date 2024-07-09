@@ -42,10 +42,6 @@ module linux_vm_nic 'modules/linux-vm-nic.bicep' = {
   ]
 }
 
-resource linux_nic 'Microsoft.Network/networkInterfaces@2023-11-01' existing = {
-  name: linux_vm_nic_name
-}
-
 param linux_vm_name string
 param linux_vm_admin string
 @secure()
@@ -54,11 +50,11 @@ module sym_vm 'modules/linux-vm.bicep' = {
   name: linux_vm_name
   params: {
     linux_vm_name: linux_vm_name
-    nic_id: linux_nic.id
+    linux_vm_nic_name: linux_vm_nic_name
     vm_admin_pwd: linux_vm_admin_pwd
     vm_admin_user: linux_vm_admin
   }
   dependsOn: [
-    linux_nic
+    linux_vm_nic
   ]
 }

@@ -173,31 +173,3 @@ module linux_vm_nsg 'modules/linux-vm-nsg.bicep' = {
   }
 }
 
-
-// ***************************
-// // look for the nsg:
-// resource linux_vm_nsg_resource 'Microsoft.Network/networkSecurityGroups@2023-11-01' existing = {
-//   name: linux_vm_nsg_name
-//   scope: resourceGroup_access
-// }
-// 
-// resource linux_vm_nic_resource 'Microsoft.Network/networkInterfaces@2023-11-01' existing = {
-//   name: linux_vm_nic_name
-//   scope: resourceGroup_access
-// }
-// 
-// // Update the nic - add nsg to nic
-// module attachNsg './modules/update-nic.bicep' = {
-//   name: 'update-nic-${secure_access_vnet.name}-${linux_vm_nic_subnet}'
-//   scope: resourceGroup_access
-//   params: {
-//     nic_name: linux_vm_nic_name
-//     // Update the nsg
-//     properties: union(linux_vm_nic_resource.properties, {
-//       networkSecurityGroup: {
-//         id: linux_vm_nsg_resource.id
-//       }
-//     })
-//   }
-// }
-

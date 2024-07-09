@@ -1,6 +1,6 @@
 # xat-lap-secure-infra
 
-# Przykład Logic Apps z Visual Studio Code
+# Przykład założenia infrastruktury dla Logic Apps
 Repo używa koncepcji devcontainers
 jako sposobu na izolację środowiska od innych komponentów pracujących na hoście.
 Do uruchomienia sugerowane jest posiadanie zainstalowanego środowiska kontereryzacji - Dockera. 
@@ -8,8 +8,8 @@ Do uruchomienia sugerowane jest posiadanie zainstalowanego środowiska konterery
 Uwaga, gdy pracujesz w kontenerze na linuksie, upewnij się, że w VSC masz ustawiony znak końca linii na styl linuxa (LF) a nie na windowsa (CRLF). 
 Jeśli tego nie zrobisz, to skrypty będą błędnie interpretowane przez shell (bash)
 
-W Repo
-- infra - zawiera skrypty (w bicep i az cli), które tworzą i konfigurują komponenety stacku azurowego
+Zawartość Repo
+- katalog infra - zawiera skrypty (w bicep i az cli), które tworzą i konfigurują komponenety stacku azurowego
 
 ## Prezentowane koncepcje:
 - zastosowanie skryptów automatyzujących tworzenie wymaganych komponentów w Azure - Bicep
@@ -48,6 +48,7 @@ W Repo
         curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64</br>
         chmod +x ./bicep</br>
         sudo mv ./bicep /usr/local/bin/bicep</br>
+        bicep --vesrion</br>
         bicep --help</br>
     </code>
 
