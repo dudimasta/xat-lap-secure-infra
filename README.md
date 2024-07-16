@@ -48,7 +48,7 @@ Zawartość Repo
         curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64</br>
         chmod +x ./bicep</br>
         sudo mv ./bicep /usr/local/bin/bicep</br>
-        bicep --vesrion</br>
+        bicep --version</br>
         bicep --help</br>
     </code>
 
