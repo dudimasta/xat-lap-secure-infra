@@ -96,3 +96,12 @@ Po deploymencie sprawdzić, ze z Linuxa jest dostęp do Az Files. Aby sprawdzić
 to solve error
 -'Unable to evaluate template language function 'extensionResourceId':
 - use: [resourceId('Microsoft.SQL/servers/databases', parameters('sqlServerName'), 'TestDB')]
+
+-------
+
+# To be done prior to session workshop 4:
+include in bicep:
+    - event grid topic: infra/src/tmp/eg_topic.json
+    - ASB namespace: infra/src/tmp/asb-ns.json
+    - ASB queues for external and internal invoices: infra/src/tmp/asb_queues.json
+
